@@ -1,5 +1,6 @@
 package com.itmuch.cloud.study.user.feign;
 
+import com.itmuch.cloud.study.user.config.HystrixFeignConfiguration;
 import com.itmuch.cloud.study.user.entity.User;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,8 @@ import java.math.BigDecimal;
 /**
  * @author zhouli
  */
-@FeignClient(name = "microservice-provider-user", fallback = UserFeignClientFallback.class)
+@FeignClient(name = "microservice-provider-user", fallback = UserFeignClientFallback.class
+        , configuration= HystrixFeignConfiguration.class)
 public interface UserFeignClient {
   @GetMapping("/users/{id}")
   User findById(@PathVariable("id") Long id);
