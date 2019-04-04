@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
@@ -23,4 +24,20 @@ public class UserController {
   public Optional<User> findById(@PathVariable Long id) {
     return this.userRepository.findById(id);
   }
+
+  @RequestMapping("/hi")
+  public String hi() {
+    return "hi ";
+  }
+
+  @RequestMapping("/timeout")
+  public String timeout(){
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    return "timeout";
+  }
+
 }

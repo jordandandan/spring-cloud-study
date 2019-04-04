@@ -6,6 +6,9 @@ spring:
     name: microservice-gateway
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true
   #可以根据请求参数,cookie,host,请求时间,请求头等进行校验判断路由, 下面根据先后顺序转发
       routes:
         - id: baidu_route
@@ -13,15 +16,46 @@ spring:
           predicates:
             - Path=/baidu/**
           filters:
+            - name: Hystrix
+              args:
+                name: myDefaultCMD
+                fallbackUri: 'forward:/defaultfallback'
+            - StripPrefix=1
+        - id: providerUser
+          uri: lb://microservice-provider-user
+          predicates:
+            - Path=/provider/**
+          filters:
             - StripPrefix=1
       enabled: true
 
-#
-#eureka:
-#  client:
-#    service-url:
-#      # 指定eureka server通信地址，注意/eureka/小尾巴不能少
-#      defaultZone: http://localhost:8761/eureka/
-#  instance:
-#    # 是否注册IP到eureka server，如不指定或设为false，那就会注册主机名到eureka server
-#    prefer-ip-address: true
+# hystrix 信号量隔离，3秒后自动超时
+hystrix:
+  command:
+    myDefaultCMD:
+      execution:
+        isolation:
+          strategy: SEMAPHORE
+          thread:
+            timeoutInMilliseconds: 3000
+  shareSecurityContext: true
+
+
+
+eureka:
+  client:
+    service-url:
+      # 指定eureka server通信地址，注意/eureka/小尾巴不能少
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    # 是否注册IP到eureka server，如不指定或设为false，那就会注册主机名到eureka server
+    prefer-ip-address: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+# 暴露监控端点
