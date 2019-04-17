@@ -16,18 +16,35 @@ spring:
           predicates:
             - Path=/baidu/**
           filters:
-            - name: Hystrix
-              args:
-                name: myDefaultCMD
-                fallbackUri: 'forward:/defaultfallback'
             - StripPrefix=1
         - id: providerUser
           uri: lb://microservice-provider-user
           predicates:
             - Path=/provider/**
           filters:
+            - name: Hystrix
+              args:
+                name: myDefaultCMD
+                fallbackUri: 'forward:/defaultfallback'
+            - StripPrefix=1
+        - id: providerUser2
+          uri: lb://microservice-provider-user
+          predicates:
+            - Path=/provider2/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                # 使用SpEL名称引用Bean，与上面新建的RateLimiterConfig类中的bean的name相同
+                key-resolver: '#{@remoteAddrKeyResolver}'
+                # 每秒最大访问次数
+                redis-rate-limiter.replenishRate: 1
+                # 令牌桶最大容量
+                redis-rate-limiter.burstCapacity: 20
             - StripPrefix=1
       enabled: true
+  redis:
+    host: localhost
+    port: 6379
 
 # hystrix 信号量隔离，3秒后自动超时
 hystrix:
